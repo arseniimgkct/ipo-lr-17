@@ -8,10 +8,10 @@ __pycache__/
 
 # C extensions
 *.so
-
+/data
 /.venv
 .venv
-
+migrations/
 # Distribution / packaging
 bin/
 build/
