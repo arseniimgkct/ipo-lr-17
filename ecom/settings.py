@@ -38,9 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'users.apps.UsersConfig',
 ]
 
-AUTH_USER_MODEL = 'ecom.DefaultUser'
+AUTH_USER_MODEL = 'users.DefaultUser'
 
 
 MIDDLEWARE = [
