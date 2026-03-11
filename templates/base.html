@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Магазин</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+            }
+            header,
+            nav {
+                margin-bottom: 20px;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+            th,
+            td {
+                border: 1px solid #ccc;
+                padding: 5px;
+                text-align: left;
+            }
+            button {
+                padding: 5px 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>Магазин</h1>
+            <nav>
+                <a href="{% url 'index' %}">Главная</a> |
+                <a href="{% url 'product_list' %}">Каталог</a> |
+                <a href="{% url 'cart_view' %}">Корзина</a>
+                | {% if user.is_authenticated %} Привет, {{ user.username }} |
+                <form
+                    action="{% url 'logout' %}"
+                    method="post"
+                    style="display: inline"
+                >
+                    {% csrf_token %}
+                    <button type="submit">Выйти</button>
+                </form>
+                {% else %}
+                <a href="{% url 'login' %}">Войти</a> |
+                <a href="{% url 'signup' %}">Регистрация</a>
+                {% endif %}
+            </nav>
+        </header>
+
+        <main>{% block content %} {% endblock %}</main>
+    </body>
+</html>

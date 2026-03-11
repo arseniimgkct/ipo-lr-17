@@ -1,6 +1,14 @@
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from catalog.models import Product, ProductCategory
 
-def index(req):
-    return HttpResponse('Main page')
+
+def index(request):
+    products = Product.objects.all()[:8]
+    categories = ProductCategory.objects.all()
+
+    context = {
+        "products": products,
+        "categories": categories,
+    }
+
+    return render(request, "shop/index.html", context)
