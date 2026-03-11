@@ -1,0 +1,30 @@
+<form method="get">
+  <input type="text" name="q" placeholder="Поиск" value="{{ q }}">
+  <select name="category">
+    <option value="">Все категории</option>
+    {% for cat in categories %}
+      <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+    {% endfor %}
+  </select>
+  <select name="producer">
+    <option value="">Все производители</option>
+    {% for p in producers %}
+      <option value="{{ p.id }}" {% if selected_producer == p.id|stringformat:"s" %}selected{% endif %}>{{ p.name }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit">Фильтр</button>
+</form>
+
+<ul>
+  {% for product in products %}
+    <li>
+      <a href="{% url 'product_detail' product.pk %}">{{ product.name }}</a> — {{ product.price }}
+      <form action="{% url 'add_to_cart' product.pk %}" method="post" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit">Добавить в корзину</button>
+      </form>
+    </li>
+  {% empty %}
+    <li>Товары не найдены</li>
+  {% endfor %}
+</ul>
