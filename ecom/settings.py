@@ -26,6 +26,10 @@ SECRET_KEY = 'django-insecure-nf#4-t3om6&s%%*2ud-3exn@40s@bn%c!j_9a2=ci_2=34-)z7
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 ALLOWED_HOSTS = []
 
@@ -107,6 +111,18 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+EMAIL_HOST = 'smtp.email-domain.com'
+EMAIL_HOST_USER = 'yourusername@youremail.com'
+EMAIL_HOST_PASSWORD = 'your_password'
+# если используется защищенное соединение
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+
+ADMINS = (
+    ('You', 'mgke89172@email.com'),
+)
+MANAGERS = ADMINS
 
 
 # Internationalization
