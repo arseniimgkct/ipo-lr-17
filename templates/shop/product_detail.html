@@ -1,9 +1,25 @@
-<h1>{{ product.name }}</h1>
-<img src="{{ product.image.url }}" alt="{{ product.name }}" />
-<p>{{ product.description }}</p>
-<p>Цена: {{ product.price }}</p>
-<p>В наличии: {{ product.quantity_in_stock }}</p>
-<form action="{% url 'add_to_cart' product.pk %}" method="post">
-    {% csrf_token %}
-    <button type="submit">Добавить в корзину</button>
-</form>
+{% extends "base.html" %}
+{% block title %}{{ product.name }} — Магазин цветов{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-md-6">
+    {% if product.image %}<img src="{{ product.image.url }}" class="img-fluid" alt="{{ product.name }}">{% endif %}
+  </div>
+  <div class="col-md-6">
+    <h1>{{ product.name }}</h1>
+    {% if product.quantity_in_stock > 0 %}
+      <span class="badge badge-available">В наличии</span>
+    {% else %}
+      <span class="badge badge-out">Нет в наличии</span>
+    {% endif %}
+    <p class="mt-3">{{ product.description }}</p>
+    <h3 class="mt-3">{{ product.price|floatformat:2 }} ₽</h3>
+
+    <form action="{% url 'add_to_cart' product.pk %}" method="post" class="mt-3 d-flex align-items-center gap-2">
+      {% csrf_token %}
+      <input type="number" name="count" value="1" min="1" max="{{ product.quantity_in_stock }}" class="form-control w-25">
+      <button class="btn btn-success" type="submit" {% if product.quantity_in_stock == 0 %}disabled{% endif %}>Добавить в корзину</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

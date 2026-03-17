@@ -19,19 +19,19 @@ def cart_view(request):
 
 
 @login_required
-def add_to_cart(request, pk):
+def add_to_cart(request, product_id):
     cart, _ = Cart.objects.get_or_create(user=request.user)
-    product = get_object_or_404(Product, pk=pk)
+    product = get_object_or_404(Product, pk=product_id)
 
     item, created = CartItem.objects.get_or_create(cart=cart, product=product)
     if not created:
+        item.count = item.count or 0
         if item.count < product.quantity_in_stock:
             item.count += 1
-            item.save()
     else:
         item.count = 1
-        item.save()
 
+    item.save()
     return redirect("cart_view")
 
 
