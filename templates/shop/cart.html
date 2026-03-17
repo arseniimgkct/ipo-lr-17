@@ -53,6 +53,7 @@
 
 <div class="d-flex justify-content-between">
   <a class="btn btn-outline-secondary" href="{% url 'product_list' %}">Продолжить покупки</a>
+  <a class="btn btn-primary" href="{% url 'checkout' %}">Оформить заказ</a>
 </div>
 {% else %}
   <p>Корзина пуста. <a href="{% url 'product_list' %}">Перейти в каталог</a></p>
