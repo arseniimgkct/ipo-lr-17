@@ -18,17 +18,22 @@ class Cart(models.Model):
 
 
 class CartItem(models.Model):
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    cart = models.ForeignKey(
+        Cart, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    count = models.PositiveIntegerField(validators=[MinValueValidator(0)])
+    count = models.PositiveIntegerField(
+        default=1,  # <- дефолтное значение
+        validators=[MinValueValidator(1)]
+    )
 
     def __str__(self):
         return f'{self.product.name} ({self.count} шт.)'
 
     def clean(self):
-        if self.count > self.product.quantity_in_stock:
-            raise ValidationError(
-                "Count can't be greater than quantity in stock")
+        if self.count is None:
+            self.count = 1
+        if self.product and self.count > self.product.quantity_in_stock:
+            self.count = self.product.quantity_in_stock
 
     def save(self, *args, **kwargs):
         self.clean()

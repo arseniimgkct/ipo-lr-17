@@ -1,13 +1,17 @@
 version: '3'
 
 tasks:
-  migrate:
-    desc: Apply migrations
-    cmds:
-      - python manage.py makemigrations
-      - python manage.py migrate
+    migrate:
+        desc: Apply migrations
+        cmds:
+            - python manage.py makemigrations cart || python3 manage.py makemigrations cart
+            - python manage.py makemigrations catalog || python3 manage.py makemigrations catalog
+            - python manage.py makemigrations ecom || python3 manage.py makemigrations ecom
+            - python.manage.py makemigrations users || python3 manage.py makemigrations users
+            - python manage.py makemigrations || python3 manage.py makemigrations
+            - python manage.py migrate || python3 manage.py migrate
 
-  run:
-    desc: Run server
-    cmds:
-      - python manage.py runserver
+    run:
+        desc: Run server
+        cmds:
+            - python manage.py runserver || python3 manage.py runserver
