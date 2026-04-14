@@ -1,53 +1,42 @@
-from django.shortcuts import render, get_object_or_404
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from django.db.models import Q
-from .models import Product, Producer, ProductCategory
-from django.core.paginator import Paginator
+from .models import Product, ProductCategory, Producer
+from ecom.serializers import ProductSerializer, CategorySerializer, ManufacturerSerializer
 
 
-def product_list(request):
-    qs = Product.objects.select_related('category', 'producer').all()
+class ProductViewSet(ModelViewSet):
+    serializer_class = ProductSerializer
 
-    q = request.GET.get('q')
-    category_id = request.GET.get('category')
-    producer_id = request.GET.get('producer')
+    def get_queryset(self):
+        qs = Product.objects.select_related('category', 'producer').all()
 
-    if q:
-        qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q))
+        q = self.request.query_params.get('q')
+        category_id = self.request.query_params.get('category')
+        producer_id = self.request.query_params.get('producer')
 
-    if category_id:
-        try:
-            category_id = int(category_id)
-            qs = qs.filter(category_id=category_id)
-        except ValueError:
-            pass
+        if q:
+            qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q))
 
-    if producer_id:
-        try:
-            producer_id = int(producer_id)
-            qs = qs.filter(producer_id=producer_id)
-        except ValueError:
-            pass
+        if category_id:
+            try:
+                qs = qs.filter(category_id=int(category_id))
+            except ValueError:
+                pass
 
-    categories = ProductCategory.objects.all()
-    producers = Producer.objects.all()
+        if producer_id:
+            try:
+                qs = qs.filter(producer_id=int(producer_id))
+            except ValueError:
+                pass
 
-    paginator = Paginator(qs, 9)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    context = {
-        'page_obj': page_obj,
-        'categories': categories,
-        'producers': producers,
-        'q': q,
-        'selected_category': category_id,
-        'selected_producer': producer_id,
-    }
-    return render(request, 'shop/product_list.html', context)
+        return qs
 
 
-def product_detail(request, pk):
-    product = get_object_or_404(
-        Product.objects.select_related('category', 'producer'), pk=pk)
-    context = {'product': product}
-    return render(request, 'shop/product_detail.html', context)
+class CategoryViewSet(ReadOnlyModelViewSet):
+    queryset = ProductCategory.objects.all()
+    serializer_class = CategorySerializer
+
+
+class ProducerViewSet(ReadOnlyModelViewSet):
+    queryset = Producer.objects.all()
+    serializer_class = ManufacturerSerializer

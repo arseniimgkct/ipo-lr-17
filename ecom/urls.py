@@ -1,20 +1,17 @@
-from django.contrib import admin
 from django.urls import path, include
-from django.conf import settings
-from django.conf.urls.static import static
-from . import views
-import os
+from rest_framework.routers import DefaultRouter
+from rest_framework.authtoken.views import obtain_auth_token
+from catalog.views import ProductViewSet, CategoryViewSet, ProducerViewSet
+from cart.views import CartViewSet
+
+router = DefaultRouter()
+
+router.register(r'products', ProductViewSet, basename='products')
+router.register(r'categories', CategoryViewSet)
+router.register(r'producers', ProducerViewSet)
+router.register(r'cart', CartViewSet, basename='cart')
 
 urlpatterns = [
-    path('', views.index, name="index"),
-    path('admin/', admin.site.urls, name="admin"),
-    path('catalog/', include('catalog.urls')),
-    path('cart/', include('cart.urls')),
-    path('accounts/', include('django.contrib.auth.urls')),
-    path('accounts/', include('users.urls')),
-    path('checkout/', include('checkout.urls'))    
+    path('api/', include(router.urls)),
+    path('api-token-auth/', obtain_auth_token),
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL,
-                          document_root=settings.MEDIA_ROOT)
