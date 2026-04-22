@@ -7,7 +7,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 
 from .models import Cart, CartItem
-from ecom import CartSerializer
+from ecom.serializers import CartSerializer
 
 from catalog.models import Product
 
