@@ -1,17 +1,29 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from django.conf import settings
+from django.conf.urls.static import static
+from django.contrib import admin
+from django.urls import include, path
 from rest_framework.authtoken.views import obtain_auth_token
-from catalog.views import ProductViewSet, CategoryViewSet, ProducerViewSet
+from rest_framework.routers import DefaultRouter
+
 from cart.views import CartViewSet
+from catalog.views import CategoryViewSet, ProducerViewSet, ProductViewSet
+
 
 router = DefaultRouter()
-
-router.register(r'products', ProductViewSet, basename='products')
-router.register(r'categories', CategoryViewSet)
-router.register(r'producers', ProducerViewSet)
-router.register(r'cart', CartViewSet, basename='cart')
+router.register(r"products", ProductViewSet, basename="products")
+router.register(r"categories", CategoryViewSet, basename="categories")
+router.register(r"producers", ProducerViewSet, basename="producers")
+router.register(r"cart", CartViewSet, basename="cart")
 
 urlpatterns = [
-    path('api/', include(router.urls)),
-    path('api-token-auth/', obtain_auth_token),
+    path("admin/", admin.site.urls),
+    path("", include("catalog.urls")),
+    path("cart/", include("cart.urls")),
+    path("accounts/", include("django.contrib.auth.urls")),
+    path("accounts/", include("users.urls")),
+    path("api/", include(router.urls)),
+    path("api-token-auth/", obtain_auth_token, name="api-token-auth"),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

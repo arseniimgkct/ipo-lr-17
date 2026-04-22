@@ -1,82 +1,74 @@
 from rest_framework import serializers
-from catalog.models import Product, ProductCategory, Producer
+
 from cart.models import Cart, CartItem
+from catalog.models import Producer, Product, ProductCategory
 
 
-class CategorySerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    name = serializers.CharField()
-    description = serializers.CharField(allow_blank=True, required=False)
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductCategory
+        fields = ("id", "name", "description")
 
 
-class ManufacturerSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    name = serializers.CharField()
-    country = serializers.CharField()
-    description = serializers.CharField(allow_blank=True, required=False)
+class ManufacturerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Producer
+        fields = ("id", "name", "country", "description")
 
 
-class ProductSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    name = serializers.CharField()
-    description = serializers.CharField()
-    image = serializers.ImageField()
-    price = serializers.DecimalField(max_digits=10, decimal_places=2)
-    quantity_in_stock = serializers.IntegerField()
+class ProductSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
+    producer = ManufacturerSerializer(read_only=True)
+    image_url = serializers.SerializerMethodField()
+    is_available = serializers.SerializerMethodField()
 
-    category = CategorySerializer()
-    producer = ManufacturerSerializer()
-
-    def create(self, validated_data):
-        category_data = validated_data.pop('category')
-        producer_data = validated_data.pop('producer')
-
-        category, _ = ProductCategory.objects.get_or_create(**category_data)
-        producer, _ = Producer.objects.get_or_create(**producer_data)
-
-        product = Product.objects.create(
-            category=category,
-            producer=producer,
-            **validated_data
+    class Meta:
+        model = Product
+        fields = (
+            "id",
+            "name",
+            "description",
+            "image",
+            "image_url",
+            "price",
+            "quantity_in_stock",
+            "is_available",
+            "category",
+            "producer",
         )
-        return product
 
-    def update(self, instance, validated_data):
-        category_data = validated_data.pop('category', None)
-        producer_data = validated_data.pop('producer', None)
+    def get_image_url(self, obj):
+        if not obj.image:
+            return ""
 
-        if category_data:
-            category, _ = ProductCategory.objects.get_or_create(**category_data)
-            instance.category = category
+        request = self.context.get("request")
+        if request is not None:
+            return request.build_absolute_uri(obj.image.url)
+        return obj.image.url
 
-        if producer_data:
-            producer, _ = Producer.objects.get_or_create(**producer_data)
-            instance.producer = producer
-
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-
-        instance.save()
-        return instance
+    def get_is_available(self, obj):
+        return obj.quantity_in_stock > 0
 
 
-class CartItemSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    product = ProductSerializer()
-    count = serializers.IntegerField()
-    price = serializers.SerializerMethodField()
+class CartItemSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(read_only=True)
+    total_price = serializers.SerializerMethodField()
 
-    def get_price(self, obj):
+    class Meta:
+        model = CartItem
+        fields = ("id", "product", "count", "total_price")
+
+    def get_total_price(self, obj):
         return obj.price()
 
 
-class CartSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    user = serializers.PrimaryKeyRelatedField(read_only=True)
-    created_at = serializers.DateTimeField(read_only=True)
-
+class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
     total_price = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Cart
+        fields = ("id", "user", "created_at", "items", "total_price")
 
     def get_total_price(self, obj):
         return obj.total_price()

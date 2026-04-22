@@ -1,0 +1,37 @@
+<article class="card product-card h-100 shadow-sm border-0">
+  <div class="product-media">
+    {% if product.image %}
+      <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+    {% else %}
+      <div class="product-placeholder">Bloom</div>
+    {% endif %}
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="product-meta">{{ product.category.name }} • {{ product.producer.name }}</div>
+    <h3 class="product-title"><a href="{% url 'product_detail' product.pk %}">{{ product.name }}</a></h3>
+    <p class="product-description">{{ product.description|truncatechars:description_limit|default:product.description }}</p>
+    <div class="mt-auto">
+      <div class="d-flex justify-content-between align-items-center mb-3 gap-3">
+        <strong class="product-price">{{ product.price }} BYN</strong>
+        {% if show_stock %}
+          <span class="stock-pill {% if product.quantity_in_stock > 0 %}in-stock{% else %}out-of-stock{% endif %}">
+            {% if product.quantity_in_stock > 0 %}В наличии{% else %}Нет в наличии{% endif %}
+          </span>
+        {% endif %}
+      </div>
+      <div class="d-flex gap-2">
+        {% if show_detail_button %}
+          <a class="btn btn-outline-bloom flex-grow-1" href="{% url 'product_detail' product.pk %}">Подробнее</a>
+        {% endif %}
+        <form method="post" action="{% url 'add_to_cart' product.pk %}" class="js-cart-form" data-product-id="{{ product.pk }}">
+          {% csrf_token %}
+          <input type="hidden" name="count" value="1">
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button class="btn btn-bloom" type="submit" {% if product.quantity_in_stock == 0 %}disabled{% endif %}>
+            {% if product.quantity_in_stock == 0 %}Нет в наличии{% else %}В корзину{% endif %}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</article>

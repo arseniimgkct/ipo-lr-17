@@ -1,42 +1,44 @@
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
-from django.db.models import Q
-from .models import Product, ProductCategory, Producer
-from ecom.serializers import ProductSerializer, CategorySerializer, ManufacturerSerializer
+from django.shortcuts import get_object_or_404, render
+from rest_framework.permissions import AllowAny
+from rest_framework.viewsets import ReadOnlyModelViewSet
+
+from ecom.serializers import CategorySerializer, ManufacturerSerializer, ProductSerializer
+
+from .models import Producer, Product, ProductCategory
+from .services import filter_products, get_catalog_context, get_homepage_context
 
 
-class ProductViewSet(ModelViewSet):
+def home(request):
+    return render(request, "shop/index.html", get_homepage_context())
+
+
+def catalog(request):
+    return render(request, "shop/catalog.html", get_catalog_context(request.GET))
+
+
+def product_detail(request, pk):
+    product = get_object_or_404(
+        Product.objects.select_related("category", "producer"),
+        pk=pk,
+    )
+    return render(request, "shop/product_detail.html", {"product": product})
+
+
+class ProductViewSet(ReadOnlyModelViewSet):
     serializer_class = ProductSerializer
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
-        qs = Product.objects.select_related('category', 'producer').all()
-
-        q = self.request.query_params.get('q')
-        category_id = self.request.query_params.get('category')
-        producer_id = self.request.query_params.get('producer')
-
-        if q:
-            qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q))
-
-        if category_id:
-            try:
-                qs = qs.filter(category_id=int(category_id))
-            except ValueError:
-                pass
-
-        if producer_id:
-            try:
-                qs = qs.filter(producer_id=int(producer_id))
-            except ValueError:
-                pass
-
-        return qs
+        return filter_products(self.request.query_params)
 
 
 class CategoryViewSet(ReadOnlyModelViewSet):
-    queryset = ProductCategory.objects.all()
+    queryset = ProductCategory.objects.order_by("name")
     serializer_class = CategorySerializer
+    permission_classes = [AllowAny]
 
 
 class ProducerViewSet(ReadOnlyModelViewSet):
-    queryset = Producer.objects.all()
+    queryset = Producer.objects.order_by("name")
     serializer_class = ManufacturerSerializer
+    permission_classes = [AllowAny]

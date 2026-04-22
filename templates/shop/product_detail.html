@@ -1,25 +1,64 @@
 {% extends "base.html" %}
-{% block title %}{{ product.name }} — Магазин цветов{% endblock %}
-{% block content %}
-<div class="row">
-  <div class="col-md-6">
-    {% if product.image %}<img src="{{ product.image.url }}" class="img-fluid" alt="{{ product.name }}">{% endif %}
-  </div>
-  <div class="col-md-6">
-    <h1>{{ product.name }}</h1>
-    {% if product.quantity_in_stock > 0 %}
-      <span class="badge badge-available">В наличии</span>
-    {% else %}
-      <span class="badge badge-out">Нет в наличии</span>
-    {% endif %}
-    <p class="mt-3">{{ product.description }}</p>
-    <h3 class="mt-3">{{ product.price|floatformat:2 }} ₽</h3>
 
-    <form action="{% url 'add_to_cart' product.pk %}" method="post" class="mt-3 d-flex align-items-center gap-2">
-      {% csrf_token %}
-      <input type="number" name="count" value="1" min="1" max="{{ product.quantity_in_stock }}" class="form-control w-25">
-      <button class="btn btn-success" type="submit" {% if product.quantity_in_stock == 0 %}disabled{% endif %}>Добавить в корзину</button>
-    </form>
+{% block title %}{{ product.name }} | Bloom Boutique{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'index' %}">Главная</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'catalog' %}">Каталог</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+  </ol>
+</nav>
+
+<section class="card border-0 shadow-sm product-detail-card">
+  <div class="card-body p-4 p-lg-5">
+    <div class="row g-4 align-items-start">
+      <div class="col-md-6">
+        <div class="product-detail-media">
+          {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid rounded-4 w-100">
+          {% else %}
+            <div class="product-placeholder product-placeholder-detail">Bloom Boutique</div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="product-meta mb-2">{{ product.category.name }} • {{ product.producer.name }}</div>
+        <h1 class="section-title mb-3">{{ product.name }}</h1>
+        <p class="lead text-secondary mb-4">{{ product.description }}</p>
+
+        <dl class="row product-specs">
+          <dt class="col-sm-5">Производитель</dt>
+          <dd class="col-sm-7">{{ product.producer.name }} ({{ product.producer.country }})</dd>
+
+          <dt class="col-sm-5">Цена</dt>
+          <dd class="col-sm-7"><strong class="product-price">{{ product.price }} BYN</strong></dd>
+
+          <dt class="col-sm-5">Количество на складе</dt>
+          <dd class="col-sm-7">{{ product.quantity_in_stock }}</dd>
+        </dl>
+
+        <form method="post" action="{% url 'add_to_cart' product.pk %}" class="js-cart-form d-flex flex-column flex-sm-row gap-3 align-items-sm-center mt-4" data-product-id="{{ product.pk }}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <label class="visually-hidden" for="product-count">Количество</label>
+          <input
+            class="form-control quantity-input"
+            id="product-count"
+            name="count"
+            type="number"
+            min="1"
+            max="{{ product.quantity_in_stock|default:1 }}"
+            value="1"
+            {% if product.quantity_in_stock == 0 %}disabled{% endif %}
+          >
+          <button class="btn btn-bloom btn-lg px-4" type="submit" {% if product.quantity_in_stock == 0 %}disabled{% endif %}>
+            {% if product.quantity_in_stock == 0 %}Нет в наличии{% else %}Добавить в корзину{% endif %}
+          </button>
+        </form>
+      </div>
+    </div>
   </div>
-</div>
+</section>
 {% endblock %}

@@ -1,53 +1,64 @@
 {% extends "base.html" %}
-{% block title %}Оформление заказа — Магазин цветов{% endblock %}
+
+{% block title %}Оформление заказа | Bloom Boutique{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center mt-4">
-  <div class="col-md-7">
-    <h2 class="mb-4">Оформление заказа</h2>
+<section class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4 p-lg-5">
+        <span class="section-kicker">Оформление</span>
+        <h1 class="section-title mb-4">Подтверждение заказа</h1>
 
-    {% if error %}
-      <div class="alert alert-danger">{{ error }}</div>
-    {% endif %}
+        {% if error %}
+          <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
 
-    <form method="post" class="card p-4 shadow-sm bg-white rounded">
-      {% csrf_token %}
+        <form method="post" class="row g-3">
+          {% csrf_token %}
+          <div class="col-md-6">
+            <label class="form-label" for="email">Электронная почта</label>
+            <input class="form-control" type="email" id="email" name="email" value="{{ request.user.email }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="name">Имя получателя</label>
+            <input class="form-control" type="text" id="name" name="name" value="{{ request.user.get_full_name|default:request.user.username }}" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="address">Адрес доставки</label>
+            <textarea class="form-control" id="address" name="address" rows="3" placeholder="Укажите адрес доставки" required></textarea>
+          </div>
 
-      <div class="mb-3">
-        <label for="email" class="form-label">Электронная почта для чека</label>
-        <input type="email" id="email" name="email" class="form-control"
-               value="{{ request.user.email }}" required>
-      </div>
-
-      <div class="mb-3">
-        <label for="address" class="form-label">Адрес доставки</label>
-        <textarea id="address" name="address" class="form-control" rows="3" required></textarea>
-      </div>
-
-      <h4 class="mt-4 mb-3">Содержимое корзины</h4>
-      {% if cart.items.all %}
-        <ul class="list-group mb-3">
-          {% for item in cart.items.all %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <div>
-                <strong>{{ item.product.name }}</strong> × {{ item.count }}
+          <div class="col-12 mt-4">
+            <h2 class="h4 mb-3">Состав заказа</h2>
+            {% if cart.items.all %}
+              <div class="list-group mb-4">
+                {% for item in cart.items.all %}
+                  <div class="list-group-item d-flex justify-content-between align-items-center gap-3">
+                    <div>
+                      <strong>{{ item.product.name }}</strong>
+                      <div class="small text-secondary">{{ item.count }} шт.</div>
+                    </div>
+                    <span>{{ item.price }} BYN</span>
+                  </div>
+                {% endfor %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                  <strong>Итого</strong>
+                  <strong>{{ cart.total_price }} BYN</strong>
+                </div>
               </div>
-              <span>{{ item.price|floatformat:2 }} ₽</span>
-            </li>
-          {% endfor %}
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <strong>Итого:</strong>
-            <strong>{{ cart.total_price|floatformat:2 }} ₽</strong>
-          </li>
-        </ul>
-
-        <button class="btn btn-primary w-100" type="submit">
-          Подтвердить заказ и отправить чек
-        </button>
-      {% else %}
-        <p>Ваша корзина пуста. <a href="{% url 'product_list' %}">Перейти в каталог</a></p>
-      {% endif %}
-    </form>
+              <button class="btn btn-bloom btn-lg" type="submit">Подтвердить заказ</button>
+            {% else %}
+              <div class="empty-state">
+                <h3>В корзине нет товаров</h3>
+                <p class="mb-3">Сначала добавьте товары из каталога.</p>
+                <a class="btn btn-outline-bloom" href="{% url 'catalog' %}">Перейти в каталог</a>
+              </div>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
-</div>
+</section>
 {% endblock %}
