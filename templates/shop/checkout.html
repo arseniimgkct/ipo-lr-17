@@ -24,9 +24,17 @@
             <label class="form-label" for="name">Имя получателя</label>
             <input class="form-control" type="text" id="name" name="name" value="{{ request.user.get_full_name|default:request.user.username }}" required>
           </div>
+          <div class="col-md-6">
+            <label class="form-label" for="phone">Телефон</label>
+            <input class="form-control" type="tel" id="phone" name="phone" value="{{ request.user.profile.phone|default:'' }}" placeholder="+375 (29) 000-00-00">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="delivery_city">Город доставки</label>
+            <input class="form-control" type="text" id="delivery_city" name="delivery_city" value="{{ request.user.profile.delivery_city|default:'' }}" placeholder="Минск">
+          </div>
           <div class="col-12">
             <label class="form-label" for="address">Адрес доставки</label>
-            <textarea class="form-control" id="address" name="address" rows="3" placeholder="Укажите адрес доставки" required></textarea>
+            <textarea class="form-control" id="address" name="address" rows="3" placeholder="Укажите адрес доставки">{% if request.user.profile.address %}{{ request.user.profile.address }}{% endif %}</textarea>
           </div>
 
           <div class="col-12 mt-4">

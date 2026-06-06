@@ -12,6 +12,16 @@
         return ''
     }
 
+    function isAuthError(status) {
+        return status === 401 || status === 403
+    }
+
+    function redirectToLogin() {
+        const loginUrl = document.body.dataset.loginUrl || '/accounts/login/'
+        const next = encodeURIComponent(window.location.pathname + window.location.search)
+        window.location.href = `${loginUrl}?next=${next}`
+    }
+
     function escapeHtml(value) {
         return String(value)
             .replaceAll('&', '&amp;')
@@ -92,7 +102,8 @@
 
         const data = await parseJson(response)
 
-        if (response.status === 401 || response.status === 403) {
+        if (isAuthError(response.status)) {
+            redirectToLogin()
             throw new Error(
                 'Чтобы добавить товар в корзину, войдите в аккаунт.',
             )

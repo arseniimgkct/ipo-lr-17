@@ -1,24 +1,146 @@
-{# registration/login.html #}
 {% extends "base.html" %}
-{% block title %}Вход{% endblock %}
+{% load static %}
+
+{% block title %}Вход | Bloom Boutique{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-6">
-    <h2>Войти</h2>
-    <form method="post" novalidate>
+<section class="auth-wrap">
+  <div class="auth-card" data-auth-card>
+    <div class="auth-card__hero">
+      <div class="auth-card__brand">
+        <span class="auth-card__eyebrow">Bloom Boutique</span>
+        <h1 class="auth-card__title">С возвращением ✿</h1>
+        <p class="auth-card__subtitle">
+          Войдите, чтобы оформить заказ и видеть историю покупок.
+        </p>
+      </div>
+      <div class="auth-card__decor" aria-hidden="true">
+        <span class="auth-blob auth-blob--1"></span>
+        <span class="auth-blob auth-blob--2"></span>
+        <span class="auth-blob auth-blob--3"></span>
+      </div>
+    </div>
+
+    <form method="post" class="auth-form" novalidate data-auth-form>
       {% csrf_token %}
-      {% for field in form %}
-        <div class="mb-3">
-          <label class="form-label">{{ field.label }}</label>
-          {{ field }}
-          {% if field.errors %}
-            <div class="text-danger small">{{ field.errors.as_text }}</div>
-          {% endif %}
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger auth-alert" role="alert">
+          {{ form.non_field_errors|join:" " }}
         </div>
-      {% endfor %}
-      <button class="btn btn-primary" type="submit">Войти</button>
+      {% endif %}
+
+      <div class="auth-field">
+        <label class="auth-label" for="id_username">Имя пользователя или email</label>
+        <div class="auth-input-group" data-input-group>
+          <span class="auth-input-group__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="4"></circle>
+              <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path>
+            </svg>
+          </span>
+          <input
+            type="text"
+            name="username"
+            id="id_username"
+            class="form-control auth-input"
+            placeholder="demo"
+            value="{{ form.username.value|default:'' }}"
+            autocomplete="username"
+            required
+            autofocus
+          >
+        </div>
+        {% if form.username.errors %}
+          <div class="auth-error">{{ form.username.errors|join:" " }}</div>
+        {% endif %}
+      </div>
+
+      <div class="auth-field">
+        <div class="d-flex justify-content-between align-items-center">
+          <label class="auth-label" for="id_password">Пароль</label>
+          <a class="auth-link" href="#">Забыли пароль?</a>
+        </div>
+        <div class="auth-input-group" data-input-group data-password-group>
+          <span class="auth-input-group__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="11" width="16" height="10" rx="2"></rect>
+              <path d="M8 11V7a4 4 0 1 1 8 0v4"></path>
+            </svg>
+          </span>
+          <input
+            type="password"
+            name="password"
+            id="id_password"
+            class="form-control auth-input"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            required
+          >
+          <button
+            type="button"
+            class="auth-input-group__action"
+            data-toggle-password
+            data-target="id_password"
+            aria-label="Показать пароль"
+          >
+            <svg class="icon-eye" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <svg class="icon-eye-off" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-6.5 0-10-7-10-7a18.5 18.5 0 0 1 4.22-5.31"></path>
+              <path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c6.5 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19"></path>
+              <path d="M1 1l22 22"></path>
+            </svg>
+          </button>
+        </div>
+        {% if form.password.errors %}
+          <div class="auth-error">{{ form.password.errors|join:" " }}</div>
+        {% endif %}
+      </div>
+
+      <div class="auth-field auth-field--row">
+        <label class="auth-check">
+          <input type="checkbox" name="remember" id="id_remember">
+          <span class="auth-check__mark"></span>
+          <span>Запомнить меня</span>
+        </label>
+      </div>
+
+      <button class="btn btn-bloom auth-submit" type="submit">
+        <span>Войти</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14"></path>
+          <path d="M13 6l6 6-6 6"></path>
+        </svg>
+      </button>
+
+      <p class="auth-foot">
+        Ещё нет аккаунта?
+        <a class="auth-link auth-link--bold" href="{% url 'signup' %}">Зарегистрироваться</a>
+      </p>
+
+      <div class="auth-divider"><span>или войдите как</span></div>
+      <div class="auth-quick">
+        <button type="button" class="auth-quick__btn" data-quick-fill="demo" data-quick-pass="demo12345">
+          <strong>demo</strong>
+          <span>покупатель</span>
+        </button>
+        <button type="button" class="auth-quick__btn" data-quick-fill="manager" data-quick-pass="manager12345">
+          <strong>manager</strong>
+          <span>менеджер</span>
+        </button>
+        <button type="button" class="auth-quick__btn" data-quick-fill="admin" data-quick-pass="admin12345">
+          <strong>admin</strong>
+          <span>админ</span>
+        </button>
+      </div>
     </form>
-    <p class="mt-3">Нет аккаунта? <a href="{% url 'signup' %}">Зарегистрироваться</a></p>
   </div>
-</div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/auth.js' %}"></script>
 {% endblock %}

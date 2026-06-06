@@ -1,17 +1,238 @@
+﻿# =========================================================================
+# Taskfile для Bloom Boutique (Django 6 + DRF)
+# Использование: `task <command>` (например: `task setup`, `task run`)
+# 
+# Соглашения:
+#   - Python ищется в .venv/Scripts/python.exe (Windows) или .venv/bin/python (Unix)
+#   - При первом запуске выполните: `task install` (или `task setup` для всего)
+#   - Если Taskfile не подхватывает команды: `task --list`
+# =========================================================================
+
 version: '3'
 
+vars:
+    WIN_VENV_PY: '.venv/Scripts/python.exe'
+    NIX_VENV_PY: '.venv/bin/python'
+    SYSTEM_PY:  'python'
+    MANAGE:     'manage.py'
+    PORT:       '8000'
+    HOST:       '127.0.0.1'
+
+env:
+    PYTHONUNBUFFERED: '1'
+    PYTHONDONTWRITEBYTECODE: '1'
+
+# Кросс-платформенное «python из venv, иначе системный».
+# В Windows Task v3 выполняет команды через cmd, поэтому используем `cmd /c ...`.
+# На Unix-системах доступен `bash`-стиль через `||`.
+# Самый надёжный приём — пробуем несколько путей подряд.
+
 tasks:
-    migrate:
-        desc: Apply migrations
+    # ------------------------------------------------------------
+    # 1. Установка и настройка
+    # ------------------------------------------------------------
+
+    install:
+        desc: " Установить зависимости (venv, pip, requirements)"
         cmds:
-            - python manage.py makemigrations cart || python3 manage.py makemigrations cart
-            - python manage.py makemigrations catalog || python3 manage.py makemigrations catalog
-            - python manage.py makemigrations ecom || python3 manage.py makemigrations ecom
-            - python.manage.py makemigrations users || python3 manage.py makemigrations users
-            - python manage.py makemigrations || python3 manage.py makemigrations
-            - python manage.py migrate || python3 manage.py migrate
+            - cmd: python -m venv .venv
+              ignore_error: true
+            - .venv/Scripts/python.exe -m pip install --upgrade pip
+            - .venv/Scripts/python.exe -m pip install -r req.txt
+            - .venv/Scripts/python.exe -m pip install python-decouple
+        methods:
+            nix:
+                cmds:
+                    - python3 -m venv .venv
+                    - .venv/bin/python -m pip install --upgrade pip
+                    - .venv/bin/python -m pip install -r req.txt
+                    - .venv/bin/python -m pip install python-decouple
+
+    setup:
+        desc: " Полная установка: venv + зависимости + миграции + сиды"
+        cmds:
+            - task: install
+            - task: migrate
+            - task: seed
+
+    # ------------------------------------------------------------
+    # 2. База данных
+    # ------------------------------------------------------------
+
+    makemigrations:
+        desc: " Сгенерировать миграции"
+        cmds:
+            - .venv/Scripts/python.exe manage.py makemigrations cart
+            - .venv/Scripts/python.exe manage.py makemigrations catalog
+            - .venv/Scripts/python.exe manage.py makemigrations checkout
+            - .venv/Scripts/python.exe manage.py makemigrations users
+            - .venv/Scripts/python.exe manage.py makemigrations
+        methods:
+            nix:
+                cmds:
+                    - .venv/bin/python manage.py makemigrations cart
+                    - .venv/bin/python manage.py makemigrations catalog
+                    - .venv/bin/python manage.py makemigrations checkout
+                    - .venv/bin/python manage.py makemigrations users
+                    - .venv/bin/python manage.py makemigrations
+
+    migrate:
+        desc: " Применить миграции"
+        cmds:
+            - .venv/Scripts/python.exe manage.py migrate
+        methods:
+            nix:
+                cmds:
+                    - .venv/bin/python manage.py migrate
+
+    seed:
+        desc: " Заполнить БД моками (категории, товары, demo/manager/admin)"
+        cmds:
+            - .venv/Scripts/python.exe manage.py seed_shop --clear --products 18 --with-demo-user --with-admin --with-manager
+        methods:
+            nix:
+                cmds:
+                    - .venv/bin/python manage.py seed_shop --clear --products 18 --with-demo-user --with-admin --with-manager
+
+    seed-quick:
+        desc: " Заполнить БД без --clear (быстрее, без пересоздания товаров)"
+        cmds:
+            - .venv/Scripts/python.exe manage.py seed_shop --products 12 --with-demo-user --with-admin --with-manager
+        methods:
+            nix:
+                cmds:
+                    - .venv/bin/python manage.py seed_shop --products 12 --with-demo-user --with-admin --with-manager
+
+    reset-db:
+        desc: " Сбросить БД (drop + migrate + seed)"
+        cmds:
+            - cmd: del /q db.sqlite3
+              ignore_error: true
+            - .venv/Scripts/python.exe manage.py migrate
+            - .venv/Scripts/python.exe manage.py seed_shop --clear --products 18 --with-demo-user --with-admin --with-manager
+        methods:
+            nix:
+                cmds:
+                    - rm -f db.sqlite3
+                    - .venv/bin/python manage.py migrate
+                    - .venv/bin/python manage.py seed_shop --clear --products 18 --with-demo-user --with-admin --with-manager
+
+    superuser:
+        desc: " Создать суперпользователя (интерактивно)"
+        cmds:
+            - .venv/Scripts/python.exe manage.py createsuperuser
+        methods:
+            nix:
+                cmds:
+                    - .venv/bin/python manage.py createsuperuser
+
+    tokens:
+        desc: " Получить API-токены для всех пользователей"
+        cmds:
+            - .venv/Scripts/python.exe -c "import os, django; os.environ.setdefault('DJANGO_SETTINGS_MODULE','ecom.settings'); django.setup(); from django.contrib.auth import get_user_model; from rest_framework.authtoken.models import Token; U=get_user_model(); [print(f'{u.username:8s} -> {Token.objects.get_or_create(user=u)[0].key}') for u in U.objects.all()]"
+        methods:
+            nix:
+                cmds:
+                    - .venv/bin/python -c "import os, django; os.environ.setdefault('DJANGO_SETTINGS_MODULE','ecom.settings'); django.setup(); from django.contrib.auth import get_user_model; from rest_framework.authtoken.models import Token; U=get_user_model(); [print(f'{u.username:8s} -> {Token.objects.get_or_create(user=u)[0].key}') for u in U.objects.all()]"
+
+    # ------------------------------------------------------------
+    # 3. Запуск dev-сервера
+    # ------------------------------------------------------------
 
     run:
-        desc: Run server
+        desc: " ▶ Запустить dev-сервер на http://{{.HOST}}:{{.PORT}}/"
         cmds:
-            - python manage.py runserver || python3 manage.py runserver
+            - .venv/Scripts/python.exe manage.py runserver {{.HOST}}:{{.PORT}}
+        methods:
+            nix:
+                cmds:
+                    - .venv/bin/python manage.py runserver {{.HOST}}:{{.PORT}}
+
+    dev:
+        desc: " ▶ То же, что run"
+        cmds:
+            - task: run
+
+    shell:
+        desc: " 🐍 Открыть Django shell"
+        cmds:
+            - .venv/Scripts/python.exe manage.py shell
+        methods:
+            nix:
+                cmds:
+                    - .venv/bin/python manage.py shell
+
+    # ------------------------------------------------------------
+    # 4. Проверки и тесты
+    # ------------------------------------------------------------
+
+    check:
+        desc: " Django system check (поиск ошибок)"
+        cmds:
+            - .venv/Scripts/python.exe manage.py check
+        methods:
+            nix:
+                cmds:
+                    - .venv/bin/python manage.py check
+
+    test:
+        desc: " Запустить тесты проекта"
+        cmds:
+            - .venv/Scripts/python.exe manage.py test
+        methods:
+            nix:
+                cmds:
+                    - .venv/bin/python manage.py test
+
+    # ------------------------------------------------------------
+    # 5. Служебные
+    # ------------------------------------------------------------
+
+    clean:
+        desc: " 🧹 Удалить __pycache__, .pyc, мусорные файлы"
+        cmds:
+            - .venv/Scripts/python.exe scripts/clean.py
+        methods:
+            nix:
+                cmds:
+                    - .venv/bin/python scripts/clean.py
+
+    collectstatic:
+        desc: " Собрать статику (для production)"
+        cmds:
+            - .venv/Scripts/python.exe manage.py collectstatic --noinput
+        methods:
+            nix:
+                cmds:
+                    - .venv/bin/python manage.py collectstatic --noinput
+
+    info:
+        desc: " Информация о проекте и окружении"
+        cmds:
+            - .venv/Scripts/python.exe --version
+            - .venv/Scripts/python.exe -c "import django, rest_framework; print(f'Django {django.get_version()}  /  DRF {rest_framework.VERSION}')"
+            - .venv/Scripts/python.exe manage.py --version
+        methods:
+            nix:
+                cmds:
+                    - .venv/bin/python --version
+                    - .venv/bin/python -c "import django, rest_framework; print(f'Django {django.get_version()}  /  DRF {rest_framework.VERSION}')"
+                    - .venv/bin/python manage.py --version
+
+    # ------------------------------------------------------------
+    # 6. Сценарии «всё сразу»
+    # ------------------------------------------------------------
+
+    start:
+        desc: " 🚀 Быстрый старт для нового разработчика: install + migrate + seed + run"
+        cmds:
+            - task: install
+            - task: migrate
+            - task: seed
+            - task: run
+
+    restart:
+        desc: " 🔄 Перезапустить БД и сервер: reset-db + run"
+        cmds:
+            - task: reset-db
+            - task: run

@@ -103,10 +103,16 @@ def checkout_view(request):
                 {"cart": cart, "error": "Ваша корзина пуста."},
             )
 
-        create_checkout_from_items(items)
+        form_data = {
+            "name": request.POST.get("name", ""),
+            "email": request.POST.get("email", ""),
+            "phone": request.POST.get("phone", ""),
+            "address": request.POST.get("address", ""),
+        }
+        create_checkout_from_items(items, user=request.user, form_data=form_data)
         cart.items.all().delete()
         messages.success(request, "Заказ оформлен. Спасибо за покупку!")
-        return redirect("cart_view")
+        return redirect("personal_cabinet")
 
     return render(request, "shop/checkout.html", {"cart": cart})
 
@@ -163,7 +169,11 @@ class CartViewSet(ViewSet):
         if not items.exists():
             return Response({"error": "Корзина пуста."}, status=status.HTTP_400_BAD_REQUEST)
 
-        checkout, total_price = create_checkout_from_items(items)
+        checkout, total_price = create_checkout_from_items(
+            items,
+            user=request.user,
+            form_data=request.data,
+        )
         cart.items.all().delete()
 
         return Response(

@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}Личный кабинет | Bloom Boutique{% endblock %}
+
+{% block content %}
+<section class="mb-4 d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
+  <div>
+    <span class="section-kicker">Личный кабинет</span>
+    <h1 class="section-title mb-1">
+      Привет, {{ profile.full_name|default:request.user.get_full_name|default:request.user.username }}!
+    </h1>
+    <p class="text-secondary mb-0">
+      Управляйте профилем и просматривайте историю заказов.
+    </p>
+  </div>
+  <div class="d-flex flex-wrap gap-2 align-items-center">
+    <span class="badge {{ user.role_badge_class }} fs-6" data-role-badge>
+      {{ user.role_display }}
+    </span>
+    <a class="btn btn-outline-bloom" href="{% url 'account_settings' %}">Настройки</a>
+  </div>
+</section>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm h-100" data-account-card>
+      <div class="card-body p-4 p-lg-4">
+        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+          <div>
+            <span class="section-kicker">Профиль</span>
+            <h2 class="h4 mb-0">Личные данные</h2>
+          </div>
+          <button class="btn btn-sm btn-outline-bloom" type="button" data-toggle-edit hidden>
+            Редактировать
+          </button>
+        </div>
+
+        <div class="alert alert-danger d-none" data-profile-error role="alert"></div>
+        <div class="alert alert-success d-none" data-profile-success role="alert"></div>
+
+        <dl class="profile-summary" data-profile-view>
+          <dt>Имя пользователя</dt>
+          <dd>{{ request.user.username }}</dd>
+          <dt>Электронная почта</dt>
+          <dd data-view="email">{{ request.user.email|default:"—" }}</dd>
+          <dt>ФИО</dt>
+          <dd data-view="full_name">{{ profile.full_name|default:"—" }}</dd>
+          <dt>Телефон</dt>
+          <dd data-view="phone">{{ profile.phone|default:"—" }}</dd>
+          <dt>Адрес доставки</dt>
+          <dd data-view="address">{{ profile.address|default:"—" }}</dd>
+          <dt>Город доставки</dt>
+          <dd data-view="delivery_city">{{ profile.delivery_city|default:"—" }}</dd>
+          <dt>Почтовый индекс</dt>
+          <dd data-view="delivery_index">{{ profile.delivery_index|default:"—" }}</dd>
+        </dl>
+
+        <form class="profile-edit-form d-none" data-profile-form>
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label" for="profile-email">Электронная почта</label>
+            <input class="form-control" id="profile-email" name="email" type="email" value="{{ request.user.email }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="profile-full_name">ФИО</label>
+            <input class="form-control" id="profile-full_name" name="full_name" type="text" value="{{ profile.full_name }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="profile-phone">Телефон</label>
+            <input class="form-control" id="profile-phone" name="phone" type="tel" value="{{ profile.phone }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="profile-address">Адрес доставки</label>
+            <input class="form-control" id="profile-address" name="address" type="text" value="{{ profile.address }}">
+          </div>
+          <div class="row g-3">
+            <div class="col-sm-7">
+              <label class="form-label" for="profile-delivery_city">Город доставки</label>
+              <input class="form-control" id="profile-delivery_city" name="delivery_city" type="text" value="{{ profile.delivery_city }}">
+            </div>
+            <div class="col-sm-5">
+              <label class="form-label" for="profile-delivery_index">Индекс</label>
+              <input class="form-control" id="profile-delivery_index" name="delivery_index" type="text" value="{{ profile.delivery_index }}">
+            </div>
+          </div>
+          <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-bloom" type="submit">Сохранить</button>
+            <button class="btn btn-outline-secondary" type="button" data-toggle-edit>Отмена</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body p-4 p-lg-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <span class="section-kicker">Мои заказы</span>
+            <h2 class="h4 mb-0">История покупок</h2>
+          </div>
+          {% if is_admin %}
+            <span class="badge text-bg-light border">Видны все заказы (админ)</span>
+          {% endif %}
+        </div>
+
+        {% if orders %}
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+                <tr>
+                  <th>№</th>
+                  <th>Дата</th>
+                  <th>Сумма</th>
+                  <th>Статус</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for order in orders %}
+                  <tr>
+                    <td>#{{ order.id }}</td>
+                    <td>{{ order.created_at|date:"d.m.Y H:i" }}</td>
+                    <td><strong>{{ order.total_price }} BYN</strong></td>
+                    <td>
+                      <span class="status-pill status-{{ order.status }}">{{ order.get_status_display }}</span>
+                    </td>
+                    <td>
+                      <a class="btn btn-sm btn-outline-bloom" href="{% url 'order_detail' order.pk %}">Подробнее</a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <h3 class="h5 mb-2">Заказов пока нет</h3>
+            <p class="mb-3 text-secondary">
+              Оформите первый заказ — он появится в этой таблице.
+            </p>
+            <a class="btn btn-bloom" href="{% url 'catalog' %}">Перейти в каталог</a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/account.js' %}"></script>
+{% endblock %}

@@ -15,6 +15,8 @@
 <body
   data-cart-api-add-url="{% url 'cart-add' %}"
   data-login-url="{% url 'login' %}"
+  data-api-me-url="{% url 'api_me' %}"
+  data-csrf-url=""
   data-is-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}"
 >
   <nav class="navbar navbar-expand-lg navbar-dark site-navbar sticky-top">
@@ -43,6 +45,17 @@
             </a>
           </li>
           {% if user.is_authenticated %}
+            <li class="nav-item">
+              <a class="nav-link d-flex align-items-center gap-2" href="{% url 'personal_cabinet' %}">
+                Кабинет
+                <span class="badge rounded-pill {{ user.role_badge_class }}" data-role-badge title="Роль: {{ user.role_display }}">
+                  {{ user.role_display }}
+                </span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'account_settings' %}">Настройки</a>
+            </li>
             <li class="nav-item ms-lg-2">
               <form method="post" action="{% url 'logout' %}" class="d-inline">
                 {% csrf_token %}

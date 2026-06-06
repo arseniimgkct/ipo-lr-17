@@ -49,10 +49,39 @@ def build_checkout_payload(items):
     return cart_data, total_price
 
 
-def create_checkout_from_items(items):
+def _resolve_customer_data(user, fallback):
+    profile = getattr(user, "profile", None)
+    full_name = (
+        (profile.full_name if profile and profile.full_name else "")
+        or user.get_full_name()
+        or user.username
+    )
+    email = user.email or ""
+    phone = (profile.phone if profile else "") or ""
+    address = (profile.address if profile else "") or ""
+
+    return {
+        "customer_name": full_name or fallback.get("name", ""),
+        "customer_email": email or fallback.get("email", ""),
+        "customer_phone": phone or fallback.get("phone", ""),
+        "delivery_address": address or fallback.get("address", ""),
+    }
+
+
+def create_checkout_from_items(items, user=None, form_data=None):
     cart_data, total_price = build_checkout_payload(items)
+    fallback = form_data or {}
+    customer = _resolve_customer_data(user, fallback) if user is not None else {
+        "customer_name": fallback.get("name", ""),
+        "customer_email": fallback.get("email", ""),
+        "customer_phone": fallback.get("phone", ""),
+        "delivery_address": fallback.get("address", ""),
+    }
+
     checkout = Checkout.objects.create(
+        user=user if user is not None and user.is_authenticated else None,
         cart_items=cart_data,
         total_price=total_price,
+        **customer,
     )
     return checkout, total_price

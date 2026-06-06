@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Заказ #{{ order.id }} | Bloom Boutique{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'index' %}">Главная</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'personal_cabinet' %}">Кабинет</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Заказ #{{ order.id }}</li>
+  </ol>
+</nav>
+
+<section class="card border-0 shadow-sm">
+  <div class="card-body p-4 p-lg-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+      <div>
+        <span class="section-kicker">Заказ</span>
+        <h1 class="section-title mb-1">Заказ #{{ order.id }}</h1>
+        <p class="text-secondary mb-0">от {{ order.created_at|date:"d.m.Y H:i" }}</p>
+      </div>
+      <span class="status-pill status-{{ order.status }} fs-6">{{ order.get_status_display }}</span>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-6">
+        <h2 class="h5">Получатель</h2>
+        <ul class="list-unstyled mb-0">
+          <li><strong>Имя:</strong> {{ order.customer_name|default:"—" }}</li>
+          <li><strong>Email:</strong> {{ order.customer_email|default:"—" }}</li>
+          <li><strong>Телефон:</strong> {{ order.customer_phone|default:"—" }}</li>
+          <li><strong>Адрес:</strong> {{ order.delivery_address|default:"—" }}</li>
+        </ul>
+      </div>
+      <div class="col-md-6">
+        <h2 class="h5">Сумма</h2>
+        <p class="display-6 mb-0 text-bloom">{{ order.total_price }} <small class="text-secondary fs-6">BYN</small></p>
+      </div>
+    </div>
+
+    <h2 class="h5 mt-4">Состав заказа</h2>
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Товар</th>
+            <th>Цена</th>
+            <th>Количество</th>
+            <th>Сумма</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in order.cart_items %}
+            <tr>
+              <td>{{ item.product }}</td>
+              <td>{{ item.price }} BYN</td>
+              <td>{{ item.count }}</td>
+              <td><strong>{{ item.total }} BYN</strong></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th colspan="3" class="text-end">Итого:</th>
+            <th>{{ order.total_price }} BYN</th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <a class="btn btn-outline-bloom mt-3" href="{% url 'personal_cabinet' %}">← Назад к заказам</a>
+  </div>
+</section>
+{% endblock %}

@@ -7,6 +7,7 @@ from rest_framework.routers import DefaultRouter
 
 from cart.views import CartViewSet
 from catalog.views import CategoryViewSet, ProducerViewSet, ProductViewSet
+from users.views import OrderDetailAPIView, OrdersAPIView, ProfileAPIView
 
 
 router = DefaultRouter()
@@ -21,6 +22,9 @@ urlpatterns = [
     path("cart/", include("cart.urls")),
     path("accounts/", include("django.contrib.auth.urls")),
     path("accounts/", include("users.urls")),
+    path("api/me/", ProfileAPIView.as_view(), name="api_me_root"),
+    path("api/orders/", OrdersAPIView.as_view(), name="api_orders_root"),
+    path("api/orders/<int:pk>/", OrderDetailAPIView.as_view(), name="api_order_detail_root"),
     path("api/", include(router.urls)),
     path("api-token-auth/", obtain_auth_token, name="api-token-auth"),
 ]
