@@ -85,23 +85,6 @@
             })
     }
 
-    function bindQuickFill() {
-        document
-            .querySelectorAll('[data-quick-fill]')
-            .forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    const userField = document.getElementById('id_username')
-                    const passField = document.getElementById('id_password')
-                    if (!userField || !passField) return
-                    userField.value = btn.getAttribute('data-quick-fill') || ''
-                    passField.value = btn.getAttribute('data-quick-pass') || ''
-                    userField.dispatchEvent(new Event('input', { bubbles: true }))
-                    passField.dispatchEvent(new Event('input', { bubbles: true }))
-                    userField.focus()
-                })
-            })
-    }
-
     function bindStrength() {
         const pw = document.getElementById('id_password1')
         const pw2 = document.getElementById('id_password2')
@@ -159,7 +142,6 @@
     document.addEventListener('DOMContentLoaded', function () {
         bindPhoneMasks()
         bindPasswordToggles()
-        bindQuickFill()
         bindStrength()
         bindSubmitAnimation()
     })
