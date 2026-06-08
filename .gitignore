@@ -11,7 +11,8 @@ __pycache__/
 /data
 /.venv
 .venv
-migrations/
+.env
+staticfiles/
 # Distribution / packaging
 bin/
 build/

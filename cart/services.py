@@ -1,5 +1,7 @@
 from decimal import Decimal
 
+from django.conf import settings
+from django.core.mail import send_mail
 from django.db.models import Sum
 
 from checkout.models import Checkout
@@ -49,6 +51,41 @@ def build_checkout_payload(items):
     return cart_data, total_price
 
 
+def build_receipt_message(checkout):
+    lines = [
+        f"Спасибо за заказ #{checkout.pk} в Bloom Boutique!",
+        "",
+        "Состав заказа:",
+    ]
+    for item in checkout.cart_items:
+        lines.append(
+            f"- {item['product']}: {item['count']} x {item['price']} BYN = {item['total']} BYN"
+        )
+    lines.extend(
+        [
+            "",
+            f"Итого: {checkout.total_price} BYN",
+            f"Получатель: {checkout.customer_name}",
+            f"Телефон: {checkout.customer_phone}",
+            f"Адрес доставки: {checkout.delivery_address}",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def send_checkout_receipt(checkout):
+    if not checkout.customer_email:
+        return 0
+
+    return send_mail(
+        subject=f"Чек по заказу #{checkout.pk} — Bloom Boutique",
+        message=build_receipt_message(checkout),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[checkout.customer_email],
+        fail_silently=False,
+    )
+
+
 def _resolve_customer_data(user, fallback):
     profile = getattr(user, "profile", None)
     full_name = (
@@ -84,4 +121,5 @@ def create_checkout_from_items(items, user=None, form_data=None):
         total_price=total_price,
         **customer,
     )
+    send_checkout_receipt(checkout)
     return checkout, total_price
