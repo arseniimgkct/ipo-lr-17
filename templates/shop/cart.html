@@ -26,8 +26,8 @@
             <tr>
               <td>
                 <div class="d-flex align-items-center gap-3">
-                  {% if item.product.image %}
-                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-thumb">
+                  {% if item.product.display_image_url %}
+                    <img src="{{ item.product.display_image_url }}" alt="{{ item.product.name }}" class="cart-thumb">
                   {% else %}
                     <div class="cart-thumb cart-thumb-placeholder">Bloom</div>
                   {% endif %}

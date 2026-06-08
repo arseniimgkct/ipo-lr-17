@@ -38,13 +38,14 @@ class ProductSerializer(serializers.ModelSerializer):
         )
 
     def get_image_url(self, obj):
-        if not obj.image:
+        image_url = obj.display_image_url
+        if not image_url:
             return ""
 
         request = self.context.get("request")
         if request is not None:
-            return request.build_absolute_uri(obj.image.url)
-        return obj.image.url
+            return request.build_absolute_uri(image_url)
+        return image_url
 
     def get_is_available(self, obj):
         return obj.quantity_in_stock > 0
