@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Корзина | Bloom Boutique{% endblock %}
+
+{% block content %}
+<section class="mb-4">
+  <span class="section-kicker">Корзина</span>
+  <h1 class="section-title">Ваши выбранные букеты и растения</h1>
+</section>
+
+{% if items %}
+  <div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Товар</th>
+            <th>Цена</th>
+            <th>Количество</th>
+            <th>Сумма</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-3">
+                  {% if item.product.image %}
+                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-thumb">
+                  {% else %}
+                    <div class="cart-thumb cart-thumb-placeholder">Bloom</div>
+                  {% endif %}
+                  <div>
+                    <a class="fw-semibold text-decoration-none" href="{% url 'product_detail' item.product.pk %}">{{ item.product.name }}</a>
+                    <div class="small text-secondary">{{ item.product.category.name }} • {{ item.product.producer.name }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>{{ item.product.price }} BYN</td>
+              <td>
+                <form method="post" action="{% url 'update_cart' item.id %}" class="d-flex gap-2 align-items-center">
+                  {% csrf_token %}
+                  <input class="form-control quantity-input" type="number" name="count" min="1" max="{{ item.product.quantity_in_stock }}" value="{{ item.count }}">
+                  <button class="btn btn-outline-bloom" type="submit">Обновить</button>
+                </form>
+              </td>
+              <td>{{ item.price }} BYN</td>
+              <td>
+                <form method="post" action="{% url 'remove_from_cart' item.id %}">
+                  {% csrf_token %}
+                  <button class="btn btn-outline-danger" type="submit">Удалить</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-4">
+    <a class="btn btn-outline-bloom" href="{% url 'catalog' %}">Продолжить покупки</a>
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-3">
+      <div class="cart-total">Итого: <strong>{{ total }} BYN</strong></div>
+      <a class="btn btn-bloom" href="{% url 'checkout' %}">Оформить заказ</a>
+    </div>
+  </div>
+{% else %}
+  <div class="empty-state">
+    <h2>Корзина пока пуста</h2>
+    <p>Добавьте товары из каталога, и они появятся здесь.</p>
+    <a class="btn btn-bloom" href="{% url 'catalog' %}">Перейти в каталог</a>
+  </div>
+{% endif %}
+{% endblock %}

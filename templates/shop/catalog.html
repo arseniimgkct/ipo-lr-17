@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Каталог | Bloom Boutique{% endblock %}
+
+{% block content %}
+<section class="mb-4">
+  <span class="section-kicker">Каталог товаров</span>
+  <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3">
+    <div>
+      <h1 class="section-title mb-2">Цветы, букеты и растения для любого повода</h1>
+      <p class="catalog-intro mb-0">Используйте фильтры слева, чтобы быстро найти нужную категорию, производителя или товар по названию.</p>
+    </div>
+    <div class="catalog-counter">
+      Найдено товаров:
+      <strong id="catalog-results-count">{{ page_obj.paginator.count }}</strong>
+    </div>
+  </div>
+</section>
+
+<section class="row g-4" id="catalog-page" data-page-size="9">
+  <div class="col-md-4 col-lg-3">
+    <aside class="filter-panel">
+      <h2 class="filter-title">Фильтры</h2>
+      <form id="catalog-filter-form" method="get" action="{% url 'catalog' %}">
+        <div class="mb-3">
+          <label class="form-label" for="search">Поиск по названию</label>
+          <input class="form-control" type="text" name="search" id="search" placeholder="Например, розы" value="{{ search_query }}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="category">Категория</label>
+          <select class="form-select" name="category" id="category">
+            <option value="">Все категории</option>
+            {% for category in categories %}
+              <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
+                {{ category.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-4">
+          <label class="form-label" for="producer">Производитель</label>
+          <select class="form-select" name="producer" id="producer">
+            <option value="">Все производители</option>
+            {% for producer in producers %}
+              <option value="{{ producer.id }}" {% if selected_producer == producer.id|stringformat:"s" %}selected{% endif %}>
+                {{ producer.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <button class="btn btn-bloom w-100" type="submit">Применить фильтры</button>
+      </form>
+    </aside>
+  </div>
+
+  <div class="col-md-8 col-lg-9">
+    <div id="catalog-error" class="alert alert-danger d-none" role="alert"></div>
+    <div id="catalog-spinner" class="catalog-spinner d-none" aria-live="polite">
+      <div class="spinner-border text-success" role="status"></div>
+      <span>Загружаем товары...</span>
+    </div>
+
+    <div class="row g-4" id="catalog-products">
+      {% for product in page_obj %}
+        <div class="col-sm-6 col-lg-4">
+          {% include "includes/product_card.html" with product=product description_limit=95 show_stock=True show_detail_button=True %}
+        </div>
+      {% empty %}
+        <div class="col-12">
+          <div class="empty-state">
+            <h3>По вашему запросу ничего не найдено</h3>
+            <p class="mb-0">Попробуйте изменить фильтры или очистить поиск.</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <nav class="mt-4" aria-label="Пагинация каталога" id="catalog-pagination">
+      {% if page_obj.paginator.num_pages > 1 %}
+        <ul class="pagination justify-content-center flex-wrap">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query_string %}&{{ query_string }}{% endif %}">Назад</a>
+            </li>
+          {% endif %}
+
+          {% for page_number in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_number == page_obj.number %}active{% endif %}">
+              <a class="page-link" href="?page={{ page_number }}{% if query_string %}&{{ query_string }}{% endif %}">{{ page_number }}</a>
+            </li>
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query_string %}&{{ query_string }}{% endif %}">Вперёд</a>
+            </li>
+          {% endif %}
+        </ul>
+      {% endif %}
+    </nav>
+  </div>
+</section>
+{% endblock %}

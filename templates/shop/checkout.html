@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Оформление заказа | Bloom Boutique{% endblock %}
+
+{% block content %}
+<section class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4 p-lg-5">
+        <span class="section-kicker">Оформление</span>
+        <h1 class="section-title mb-4">Подтверждение заказа</h1>
+
+        {% if error %}
+          <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+
+        <form method="post" class="row g-3">
+          {% csrf_token %}
+          <div class="col-md-6">
+            <label class="form-label" for="email">Электронная почта</label>
+            <input class="form-control" type="email" id="email" name="email" value="{{ request.user.email }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="name">Имя получателя</label>
+            <input class="form-control" type="text" id="name" name="name" value="{{ request.user.get_full_name|default:request.user.username }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="phone">Телефон</label>
+            <input class="form-control" type="tel" id="phone" name="phone" value="{{ request.user.profile.phone|default:'' }}" placeholder="+375 (29) 000-00-00">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="delivery_city">Город доставки</label>
+            <input class="form-control" type="text" id="delivery_city" name="delivery_city" value="{{ request.user.profile.delivery_city|default:'' }}" placeholder="Минск">
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="address">Адрес доставки</label>
+            <textarea class="form-control" id="address" name="address" rows="3" placeholder="Укажите адрес доставки">{% if request.user.profile.address %}{{ request.user.profile.address }}{% endif %}</textarea>
+          </div>
+
+          <div class="col-12 mt-4">
+            <h2 class="h4 mb-3">Состав заказа</h2>
+            {% if cart.items.all %}
+              <div class="list-group mb-4">
+                {% for item in cart.items.all %}
+                  <div class="list-group-item d-flex justify-content-between align-items-center gap-3">
+                    <div>
+                      <strong>{{ item.product.name }}</strong>
+                      <div class="small text-secondary">{{ item.count }} шт.</div>
+                    </div>
+                    <span>{{ item.price }} BYN</span>
+                  </div>
+                {% endfor %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                  <strong>Итого</strong>
+                  <strong>{{ cart.total_price }} BYN</strong>
+                </div>
+              </div>
+              <button class="btn btn-bloom btn-lg" type="submit">Подтвердить заказ</button>
+            {% else %}
+              <div class="empty-state">
+                <h3>В корзине нет товаров</h3>
+                <p class="mb-3">Сначала добавьте товары из каталога.</p>
+                <a class="btn btn-outline-bloom" href="{% url 'catalog' %}">Перейти в каталог</a>
+              </div>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

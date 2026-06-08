@@ -8,10 +8,11 @@ __pycache__/
 
 # C extensions
 *.so
-
+/data
 /.venv
 .venv
-
+.env
+staticfiles/
 # Distribution / packaging
 bin/
 build/
@@ -52,6 +53,7 @@ coverage.xml
 # Django stuff:
 *.log
 *.pot
+media/
 
 # Sphinx documentation
 docs/_build/

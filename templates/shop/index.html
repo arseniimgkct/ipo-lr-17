@@ -1,13 +1,81 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shop</title>
-</head>
-<body>
-    <h1>This is main page</h1>
-    <a href="/about">About Author</a>
-    <a href="/flowers">Flowers Shop</a>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Bloom Boutique | Цветочный магазин{% endblock %}
+
+{% block content %}
+<section class="hero-section mb-5">
+  <div class="row align-items-center g-4">
+    <div class="col-lg-7">
+      <span class="section-kicker">Лабораторная работа №21</span>
+      <h1 class="hero-title">Цветочный магазин с живой витриной и атмосферой весенней оранжереи</h1>
+      <p class="hero-text">
+        Собираем букеты из свежих цветов, оформляем подарочные композиции и помогаем выбрать идеальный акцент для дома или праздника.
+      </p>
+      <div class="d-flex flex-wrap gap-3">
+        <a class="btn btn-bloom btn-lg" href="{% url 'catalog' %}">Перейти в каталог</a>
+        <a class="btn btn-outline-bloom btn-lg" href="#popular-products">Популярные товары</a>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="hero-card">
+        <div class="hero-card-badge">Свежая поставка каждый день</div>
+        <h2>Букеты, монстеры, розы и декоративные композиции</h2>
+        <p class="mb-0">Подбираем цветовую гамму под настроение: от нежных пастельных оттенков до насыщенных винных и зелёных акцентов.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="mb-5" id="popular-products">
+  <div class="section-heading">
+    <div>
+      <span class="section-kicker">Популярное</span>
+      <h2 class="section-title">6 товаров, которые чаще всего выбирают для подарка</h2>
+    </div>
+    <a class="section-link" href="{% url 'catalog' %}">Весь каталог</a>
+  </div>
+  <div class="row g-4">
+    {% for product in products %}
+      <div class="col-sm-6 col-lg-4">
+        {% include "includes/product_card.html" with product=product description_limit=110 show_stock=False show_detail_button=False %}
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="empty-state">
+          <h3>Товары пока не добавлены</h3>
+          <p class="mb-0">После заполнения каталога здесь автоматически появятся популярные позиции магазина.</p>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section>
+  <div class="section-heading">
+    <div>
+      <span class="section-kicker">Категории</span>
+      <h2 class="section-title">Подберите раздел по формату букета или растения</h2>
+    </div>
+  </div>
+  <div class="row g-3">
+    {% for category in categories %}
+      <div class="col-sm-6 col-lg-4">
+        <a class="category-tile" href="{% url 'catalog' %}?category={{ category.id }}">
+          <span class="category-icon">✿</span>
+          <span>
+            <strong>{{ category.name }}</strong>
+            <small>{{ category.description|default:"Тематическая подборка товаров магазина."|truncatechars:80 }}</small>
+          </span>
+        </a>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="empty-state">
+          <h3>Категории отсутствуют</h3>
+          <p class="mb-0">Добавьте категории товаров в админ-панели, и они появятся на главной странице.</p>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
