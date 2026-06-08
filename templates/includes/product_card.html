@@ -1,7 +1,7 @@
 <article class="card product-card h-100 shadow-sm border-0">
   <div class="product-media">
-    {% if product.image %}
-      <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+    {% if product.display_image_url %}
+      <img src="{{ product.display_image_url }}" class="card-img-top" alt="{{ product.name }}">
     {% else %}
       <div class="product-placeholder">Bloom</div>
     {% endif %}

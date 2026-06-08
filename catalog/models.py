@@ -1,5 +1,6 @@
-from django.db import models
 from django.core.validators import MinValueValidator
+from django.db import models
+from django.templatetags.static import static
 
 
 class ProductCategory(models.Model):
@@ -28,6 +29,16 @@ class Product(models.Model):
     quantity_in_stock = models.PositiveIntegerField()
     category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
     producer = models.ForeignKey(Producer, on_delete=models.CASCADE)
+
+    @property
+    def display_image_url(self):
+        if not self.image:
+            return ""
+
+        image_name = self.image.name
+        if image_name.startswith(("data/products/mock-product-", "products/mock-product-")):
+            return static(f"images/{image_name}")
+        return self.image.url
 
     def __str__(self):
         return self.name
